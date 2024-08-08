@@ -1,4 +1,4 @@
-// src/services/MapService.js
+// services/MapService.js
 import axios from 'axios';
 
 const MAPS_API_KEY = 'YOUR_MAPS_API_KEY';
@@ -24,27 +24,19 @@ export const getCrimeData = async (lat, lon) => {
   return response.data.incidents;
 };
 
-const processRoute = async (route) => {
-  const steps = route.legs[0].steps;
-  const safetyScores = await Promise.all(steps.map(async (step) => {
-    const crimes = await getCrimeData(step.end_location.lat, step.end_location.lng);
-    return calculateSafetyScore(crimes);
-  }));
-
-  const safeRoute = steps.map((step, index) => ({
-    ...step,
-    safetyScore: safetyScores[index]
-  }));
-
+const processRoute = (route) => {
+  const { distance, duration, start_address, end_address, steps } = route.legs[0];
   return {
-    distance: route.legs[0].distance.text,
-    duration: route.legs[0].duration.text,
-    steps: safeRoute
+    distance: distance.text,
+    duration: duration.text,
+    startAddress: start_address,
+    endAddress: end_address,
+    steps: steps.map(({ distance, duration, html_instructions, start_location, end_location }) => ({
+      distance: distance.text,
+      duration: duration.text,
+      instructions: html_instructions,
+      startLocation: start_location,
+      endLocation: end_location
+    }))
   };
-};
-
-const calculateSafetyScore = (crimes) => {
-  // Implement your safety score calculation logic here
-  // For example, you could use the number and severity of crimes
-  return 100 - (crimes.length * 5); // Simple example
 };

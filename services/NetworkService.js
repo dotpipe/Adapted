@@ -1,17 +1,20 @@
-// mobile/AdaptMobile/AdaptMobile/src/services/NetworkService.js
+// services/NetworkService.js
 import NetInfo from "@react-native-community/netinfo";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class NetworkService {
   constructor() {
     this.isConnected = true;
     this.listeners = [];
+    this.offlineQueue = [];
   }
 
   init() {
     NetInfo.addEventListener(state => {
       this.isConnected = state.isConnected;
       this.notifyListeners();
+      if (this.isConnected) {
+        this.processOfflineQueue();
+      }
     });
   }
 
@@ -27,46 +30,29 @@ class NetworkService {
     this.listeners.forEach(listener => listener(this.isConnected));
   }
 
-  async fetchWithTimeout(url, options = {}, timeout = 5000) {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
+  addToOfflineQueue(action) {
+    this.offlineQueue.push(action);
+  }
 
-    try {
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal
-      });
-      clearTimeout(id);
-      return response;
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        throw new Error('Request timed out');
+  async processOfflineQueue() {
+    while (this.offlineQueue.length > 0) {
+      const action = this.offlineQueue.shift();
+      try {
+        await action();
+      } catch (error) {
+        console.error('Error processing offline action:', error);
+        this.offlineQueue.unshift(action);
+        break;
       }
-      throw error;
     }
   }
 
-  async fetchWithCache(url, options = {}) {
-    const cacheKey = `cache_${url}`;
-    try {
-      if (!this.isConnected) {
-        const cachedData = await AsyncStorage.getItem(cacheKey);
-        if (cachedData) {
-          return JSON.parse(cachedData);
-        }
-      }
-
-      const response = await this.fetchWithTimeout(url, options);
-      const data = await response.json();
-      await AsyncStorage.setItem(cacheKey, JSON.stringify(data));
-      return data;
-    } catch (error) {
-      console.error('Fetch error:', error);
-      const cachedData = await AsyncStorage.getItem(cacheKey);
-      if (cachedData) {
-        return JSON.parse(cachedData);
-      }
-      throw error;
+  async performAction(action) {
+    if (this.isConnected) {
+      return await action();
+    } else {
+      this.addToOfflineQueue(action);
+      return null;
     }
   }
 }

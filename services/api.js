@@ -1,4 +1,4 @@
-const API_URL = 'https://api.adapt.com';
+const API_URL = 'https://dotcomdumb.hopto.org';
 import firebase from '@react-native-firebase/app';
 import '@react-native-firebase/database';
 

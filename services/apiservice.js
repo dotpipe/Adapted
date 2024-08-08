@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://api.adaptation.com';
+const API_BASE_URL = 'https://dotcomdumb.hopto.org';
 
 export const uploadCSV = async (userId, storeId, csvData) => {
   try {

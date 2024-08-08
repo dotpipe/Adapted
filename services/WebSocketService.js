@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 
 class WebSocketService {
   constructor() {
-    this.socket = io('https://api.adaptmobile.com');
+    this.socket = io('https://dotcomdumb.hopto.org');
     this.listeners = {};
   }
 

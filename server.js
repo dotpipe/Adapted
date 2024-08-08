@@ -1,6 +1,9 @@
 const express = require('express');
+const connectDB = require('./database');
 const app = express();
 const port = process.env.PORT || 3000;
+
+connectDB();
 
 // Import necessary services
 const MapService = require('./services/MapService');

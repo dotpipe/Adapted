@@ -1,54 +1,68 @@
-// mobile/AdaptMobile/AdaptMobile/src/services/LocationService.js
+// services/LocationService.js
 import * as Location from 'expo-location';
-import { AdManager } from './AdManager';
+import AdManager from './AdManager';
 
-export class LocationService {
+class LocationService {
   constructor() {
     this.adManager = new AdManager();
+    this.currentLocation = null;
     this.currentZipCode = null;
   }
 
-  async startLocationTracking() {
+  async init() {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      console.error('Permission to access location was denied');
-      return;
+      throw new Error('Permission to access location was denied');
     }
+  }
 
-    await Location.watchPositionAsync(
+  async getCurrentLocation() {
+    if (!this.currentLocation) {
+      let location = await Location.getCurrentPositionAsync({});
+      this.currentLocation = location.coords;
+    }
+    return this.currentLocation;
+  }
+
+  async getZipCode() {
+    if (!this.currentZipCode) {
+      let location = await this.getCurrentLocation();
+      let [{ postalCode }] = await Location.reverseGeocodeAsync(location);
+      this.currentZipCode = postalCode;
+    }
+    return this.currentZipCode;
+  }
+
+  async getAdsForCurrentLocation() {
+    const zipCode = await this.getZipCode();
+    return await this.adManager.loadAds(zipCode);
+  }
+
+  async watchLocationChanges(callback) {
+    return await Location.watchPositionAsync(
       {
-        accuracy: Location.Accuracy.Balanced,
-        timeInterval: 60000, // Check every minute
-        distanceInterval: 1000, // Or every 1000 meters
+        accuracy: Location.Accuracy.High,
+        timeInterval: 5000,
+        distanceInterval: 10,
       },
-      this.handleLocationUpdate
+      (location) => {
+        this.currentLocation = location.coords;
+        this.currentZipCode = null; // Reset zip code to force refresh
+        callback(location);
+      }
     );
   }
 
-  handleLocationUpdate = async (location) => {
-    const { latitude, longitude } = location.coords;
-    const newZipCode = await this.getZipCodeFromCoordinates(latitude, longitude);
-    
-    if (newZipCode && newZipCode !== this.currentZipCode) {
-      this.currentZipCode = newZipCode;
-      const ads = await this.adManager.getAdsForLocation(newZipCode);
-      // Trigger UI update with new ads
-    }
+  async getNearbyPlaces(type, radius = 1000) {
+    const { latitude, longitude } = await this.getCurrentLocation();
+    // Implement API call to get nearby places (e.g., using Google Places API)
+    // Return the list of nearby places
   }
 
-  async getZipCodeFromCoordinates(latitude, longitude) {
-    try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=YOUR_API_KEY`
-      );
-      const data = await response.json();
-      const zipCode = data.results[0].address_components.find(
-        component => component.types.includes('postal_code')
-      ).long_name;
-      return zipCode;
-    } catch (error) {
-      console.error('Error fetching zip code:', error);
-      return null;
-    }
+  calculateDistance(lat1, lon1, lat2, lon2) {
+    // Implement distance calculation (e.g., using Haversine formula)
+    // Return distance in kilometers
   }
 }
+
+export default new LocationService();

@@ -1,13 +1,25 @@
-// mobile/AdaptMobile/AdaptMobile/src/services/AdManager.js
-export class AdManager {
-  async getAdsForLocation(zipCode) {
-    try {
-      const response = await fetch(`https://your-api-endpoint.com/ads?zipCode=${zipCode}`);
-      const ads = await response.json();
-      return ads;
-    } catch (error) {
-      console.error('Error fetching ads:', error);
-      return [];
-    }
+// services/AdManager.js
+import { MongoClient } from 'mongodb';
+
+class AdManager {
+  constructor() {
+    this.client = new MongoClient(process.env.MONGODB_URI);
+    this.db = this.client.db('adapt_mobile');
+    this.adsCollection = this.db.collection('ads');
+  }
+
+  async loadAds(zipCode) {
+    return await this.adsCollection.find({ zip_code: zipCode }).toArray();
+  }
+
+  async getAdById(id) {
+    return await this.adsCollection.findOne({ _id: id });
+  }
+
+  async createAd(adData) {
+    const result = await this.adsCollection.insertOne(adData);
+    return result.insertedId;
   }
 }
+
+export default new AdManager();
