@@ -1,80 +1,83 @@
-// services/LocationService.js
-
-import * as Location from 'expo-location';
-import AdManager from './AdManager';
-import StoreHeatMapService from './StoreHeatMapService';
+import BackgroundGeolocation from 'react-native-background-geolocation';
+import { ZipCodeManager } from './ZipCodeManager';
+import { startGeofenceMonitoring } from './GeoFencingService';
+import axios from 'axios';
 
 class LocationService {
   constructor() {
-    this.adManager = new AdManager();
+    this.zipCodeManager = null;
     this.currentLocation = null;
-    this.currentZipCode = null;
-    this.watchId = null;
   }
 
-  async init() {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      throw new Error('Permission to access location was denied');
-    }
+  initializeForUser(userId) {
+    this.zipCodeManager = new ZipCodeManager(userId);
+    this.zipCodeManager.startZipCodeTracking();
+    startGeofenceMonitoring(userId);
+    this.startLocationTracking();
+  }
+
+  startLocationTracking() {
+    BackgroundGeolocation.onLocation(this.handleLocationUpdate);
+    BackgroundGeolocation.ready({
+      desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
+      distanceFilter: 10,
+      stopOnTerminate: false,
+      startOnBoot: true,
+      debug: false,
+      logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE
+    }, (state) => {
+      console.log("- BackgroundGeolocation is ready: ", state);
+      BackgroundGeolocation.start();
+    });
+  }
+
+  handleLocationUpdate = async (location) => {
+    this.currentLocation = location;
+    await this.updateServerWithLocation(location);
+    await this.zipCodeManager.handleLocationUpdate(location);
   }
 
   async getCurrentLocation() {
-    if (!this.currentLocation) {
-      let location = await Location.getCurrentPositionAsync({});
-      this.currentLocation = location.coords;
+    if (this.currentLocation) {
+      return this.currentLocation;
     }
-    return this.currentLocation;
+    return new Promise((resolve, reject) => {
+      BackgroundGeolocation.getCurrentPosition({
+        samples: 1,
+        persist: false
+      }, resolve, reject);
+    });
   }
 
-  async getZipCode() {
-    if (!this.currentZipCode) {
-      let location = await this.getCurrentLocation();
-      let [{ postalCode }] = await Location.reverseGeocodeAsync(location);
-      this.currentZipCode = postalCode;
-    }
-    return this.currentZipCode;
-  }
-
-  async getAdsForCurrentLocation() {
-    const zipCode = await this.getZipCode();
-    return await this.adManager.loadAds(zipCode);
-  }
-
-  startWatchingLocation(storeId) {
-    this.watchId = Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.High,
-        timeInterval: 60000, // 1 minute
-        distanceInterval: 1, // 1 meter
-      },
-      (location) => {
-        this.currentLocation = location.coords;
-        StoreHeatMapService.recordLocation(
-          storeId,
-          location.coords.latitude,
-          location.coords.longitude,
-          new Date().toISOString()
-        );
-      }
-    );
-  }
-
-  stopWatchingLocation() {
-    if (this.watchId) {
-      this.watchId.remove();
-      this.watchId = null;
+  async updateServerWithLocation(location) {
+    try {
+      await axios.post('/api/user/update-location', {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        timestamp: location.timestamp
+      });
+    } catch (error) {
+      console.error('Failed to update server with location:', error);
     }
   }
 
-  async isWithinStorePerimeter(storeId) {
-    const location = await this.getCurrentLocation();
-    return StoreHeatMapService.isWithinPerimeter(storeId, location.latitude, location.longitude);
+  async requestLocationPermissions() {
+    return BackgroundGeolocation.requestPermission();
   }
 
-  async getNearbyStores(radius = 5000) {
-    const location = await this.getCurrentLocation();
-    // Implement logic to fetch nearby stores based on current location and radius
+  calculateDistance(point1, point2) {
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = point1.latitude * Math.PI / 180;
+    const φ2 = point2.latitude * Math.PI / 180;
+    const Δφ = (point2.latitude - point1.latitude) * Math.PI / 180;
+    const Δλ = (point2.longitude - point1.longitude) * Math.PI / 180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c; // Distance in meters
   }
 }
 
