@@ -1,4 +1,5 @@
 // services/NetworkService.js
+
 import NetInfo from "@react-native-community/netinfo";
 
 class NetworkService {
@@ -33,14 +34,7 @@ class NetworkService {
   addToOfflineQueue(action) {
     this.offlineQueue.push(action);
   }
-  async performAction(action) {
-    if (this.isConnected) {
-      return await action();
-    } else {
-      this.addToOfflineQueue(action);
-      return null;
-    }
-  }
+
   async processOfflineQueue() {
     while (this.offlineQueue.length > 0) {
       const action = this.offlineQueue.shift();

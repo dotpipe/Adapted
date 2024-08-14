@@ -1,12 +1,15 @@
 // services/LocationService.js
+
 import * as Location from 'expo-location';
 import AdManager from './AdManager';
+import StoreHeatMapService from './StoreHeatMapService';
 
 class LocationService {
   constructor() {
     this.adManager = new AdManager();
     this.currentLocation = null;
     this.currentZipCode = null;
+    this.watchId = null;
   }
 
   async init() {
@@ -38,35 +41,40 @@ class LocationService {
     return await this.adManager.loadAds(zipCode);
   }
 
-  async watchLocationChanges(callback) {
-    return await Location.watchPositionAsync(
+  startWatchingLocation(storeId) {
+    this.watchId = Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: 5000,
-        distanceInterval: 10,
+        timeInterval: 60000, // 1 minute
+        distanceInterval: 1, // 1 meter
       },
       (location) => {
         this.currentLocation = location.coords;
-        this.currentZipCode = null; // Reset zip code to force refresh
-        callback(location);
+        StoreHeatMapService.recordLocation(
+          storeId,
+          location.coords.latitude,
+          location.coords.longitude,
+          new Date().toISOString()
+        );
       }
     );
   }
-  
-  async getGasPriceSavingsRoute(origin, destination) {
-    const response = await fetch(`/api/consumer/gas-savings-route?origin=${origin}&destination=${destination}`);
-    return await response.json();
+
+  stopWatchingLocation() {
+    if (this.watchId) {
+      this.watchId.remove();
+      this.watchId = null;
+    }
   }
 
-  async getNearbyPlaces(type, radius = 1000) {
-    const { latitude, longitude } = await this.getCurrentLocation();
-    // Implement API call to get nearby places (e.g., using Google Places API)
-    // Return the list of nearby places
+  async isWithinStorePerimeter(storeId) {
+    const location = await this.getCurrentLocation();
+    return StoreHeatMapService.isWithinPerimeter(storeId, location.latitude, location.longitude);
   }
 
-  calculateDistance(lat1, lon1, lat2, lon2) {
-    // Implement distance calculation (e.g., using Haversine formula)
-    // Return distance in kilometers
+  async getNearbyStores(radius = 5000) {
+    const location = await this.getCurrentLocation();
+    // Implement logic to fetch nearby stores based on current location and radius
   }
 }
 

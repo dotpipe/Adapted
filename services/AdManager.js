@@ -8,6 +8,11 @@ class AdManager {
     this.adsCollection = this.db.collection('ads');
   }
 
+  async getAdsForLocation(zipCode) {
+    const response = await fetch(`/api/consumer/ads?zipCode=${zipCode}`);
+    return await response.json();
+  }
+
   async loadAds(zipCode) {
     return await this.adsCollection.find({ zip_code: zipCode }).toArray();
   }

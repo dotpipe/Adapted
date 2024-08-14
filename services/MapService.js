@@ -6,9 +6,9 @@ const CRIME_API_KEY = 'YOUR_CRIMEOMETER_API_KEY';
 
 export const getOptimizedRoute = async (origin, destination) => {
   const response = await axios.get(
-    `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${MAPS_API_KEY}`
+    `/api/consumer/route?origin=${origin}&destination=${destination}`
   );
-  return processRoute(response.data.routes[0]);
+  return processRoute(response.data.route);
 };
 
 export const getCrimeData = async (lat, lon) => {
