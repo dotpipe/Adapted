@@ -5,7 +5,7 @@ import Header from './components/Header';
 import Home from './pages/Home';
 import Map from './pages/Map';
 import Cart from './pages/Cart';
-import Login from './pages/Login';
+// import Login from './pages/Login';
 import Register from './pages/Register';
 import Deals from './pages/Deals';
 import StoreDetails from './pages/StoreDetails';
@@ -20,7 +20,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/map" element={<Map />} />
         <Route path="/cart" element={<Cart />} />
-        <Route path="/login" element={<Login />} />
+        {/* <Route path="/login" element={<Login />} /> */}
         <Route path="/register" element={<Register />} />
         <Route path="/deals" element={<Deals />} />
         <Route path="/store/:storeId" element={<StoreDetails />} />
