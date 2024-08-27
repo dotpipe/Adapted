@@ -1,7 +1,7 @@
 // /components/web/pages/Map.js
 import React, { useEffect, useState } from 'react';
 import { getOptimizedRoute } from '../services/MapService';
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Polyline } from '@react-google-maps/api';
 
 
 function Map() {
@@ -31,7 +31,7 @@ function Map() {
         value={destination}
         onChange={(e) => setDestination(e.target.value)}
       />
-      <MapView
+      <GoogleMap
         googleMapURL={`https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY`}
         loadingElement={<div style={{ height: `100%` }} />}
         containerElement={<div style={{ height: `400px` }} />}
@@ -49,7 +49,7 @@ function Map() {
             }}
           />
         )}
-      </MapView>
+      </GoogleMap>
     </div>
   );
 }
