@@ -1,7 +1,7 @@
 // /components/mobile/screens/UserProfileScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button } from 'react-native';
-import { getCurrentUser, signOut } from '../../services/AuthService';
+import { getCurrentUser, signOut } from '../services/AuthService';
 
 const UserProfileScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);

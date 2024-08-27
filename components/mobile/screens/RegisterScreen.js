@@ -1,7 +1,7 @@
 // /components/mobile/screens/RegisterScreen.js
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet } from 'react-native';
-import { auth } from '../../services/AuthService';
+import { auth } from '../services/AuthService';
 
 const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');

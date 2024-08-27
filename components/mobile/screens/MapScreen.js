@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, TextInput, Button } from 'react-native';
 import MapView, { Polyline } from 'react-native-maps';
-import { getOptimizedRoute } from '../../services/MapService';
+import { getOptimizedRoute } from '../services/MapService';
 
 const MapScreen = () => {
   const [route, setRoute] = useState(null);

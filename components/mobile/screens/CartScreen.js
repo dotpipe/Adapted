@@ -1,7 +1,7 @@
 // /components/mobile/screens/CartScreen.js
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Button } from 'react-native';
-import { CartManager } from '../../services/CartManager';
+import { CartManager } from '../services/CartManager';
 
 const CartScreen = () => {
   const [cartItems, setCartItems] = useState([]);

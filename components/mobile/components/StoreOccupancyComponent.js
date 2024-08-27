@@ -1,7 +1,7 @@
 // /components/mobile/components/StoreOccupancyDisplay.js
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
-import { subscribeToStoreOccupancy } from '../../services/OccupancyService';
+import { subscribeToStoreOccupancy } from '../services/OccupancyService';
 
 const StoreOccupancyDisplay = ({ storeId }) => {
   const [occupancy, setOccupancy] = useState(null);

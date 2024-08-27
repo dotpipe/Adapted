@@ -1,8 +1,8 @@
 // /components/mobile/screens/CheckoutScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Button } from 'react-native';
-import { CartManager } from '../../services/CartManager';
-import { apiService } from '../../services/ApiService';
+import { CartManager } from '../services/CartManager';
+import { apiService } from '../services/ApiService';
 
 const CheckoutScreen = ({ navigation }) => {
   const [cartItems, setCartItems] = useState([]);

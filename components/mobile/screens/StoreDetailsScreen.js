@@ -1,8 +1,8 @@
 // /components/mobile/screens/StoreDetailsScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList } from 'react-native';
-import { getStoreDetails, getStoreProducts } from '../../services/StoreService';
-import { subscribeToStoreOccupancy } from '../../services/OccupancyService';
+import { getStoreDetails, getStoreProducts } from '../services/StoreService';
+import { subscribeToStoreOccupancy } from '../services/OccupancyService';
 
 const StoreDetailsScreen = ({ route }) => {
   const { storeId } = route.params;

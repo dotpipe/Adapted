@@ -1,7 +1,7 @@
 // /components/mobile/screens/LoginScreen.js
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet } from 'react-native';
-import { signIn } from '../../services/AuthService';
+import { signIn } from '../services/AuthService';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');

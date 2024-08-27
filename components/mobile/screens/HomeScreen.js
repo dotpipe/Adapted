@@ -2,8 +2,8 @@
 import React, { useEffect } from 'react';
 import { View, Text, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { startGeofenceMonitoring } from '../../services/GeoFencingService';
-import { subscribeToStoreOccupancy } from '../../services/OccupancyService';
+import { startGeofenceMonitoring } from '../services/GeoFencingService';
+import { subscribeToStoreOccupancy } from '../services/OccupancyService';
 
 const HomeScreen = () => {
   const navigation = useNavigation();

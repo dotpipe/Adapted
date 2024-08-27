@@ -1,7 +1,7 @@
 // /components/mobile/components/DealFinder.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList } from 'react-native';
-import { getDeals } from '../../services/DealService';
+import { getDeals } from '../services/DealService';
 
 const DealFinder = ({ location }) => {
   const [deals, setDeals] = useState([]);
